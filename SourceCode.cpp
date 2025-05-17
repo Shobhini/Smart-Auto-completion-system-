@@ -1,8 +1,28 @@
 #include <bits/stdc++.h>
 # include "TrieNode.h"
 #include "Typos.h"
+#include "FileHandler.h"
 
 using namespace std;
+
+// Windows color handling
+class Color {
+public:
+    static const string RESET;
+    static const string GREEN;
+    static const string YELLOW;
+    static const string BLUE;
+    static const string CYAN;
+    static const string RED;
+};
+
+// Define the static const strings
+const string Color::RESET = "\033[0m";
+const string Color::GREEN = "\033[32m";
+const string Color::YELLOW = "\033[33m";
+const string Color::BLUE = "\033[34m";
+const string Color::CYAN = "\033[36m";
+const string Color::RED = "\033[31m";
 
 string TrieNode::probableMistake(char c) {
     Typos *findTypo = new Typos();
@@ -87,28 +107,90 @@ vector<string> TrieNode::bfsSearch(string word) {
     return suggestions;
 }
 
+void TrieNode::getAllWords(vector<string>& words, string current) {
+    if (isWord) {
+        words.push_back(current);
+    }
+    for (const auto& pair : child) {
+        pair.second->getAllWords(words, current + pair.first);
+    }
+}
+
+void TrieNode::displayColoredSuggestion(const string& prefix, const string& suggestion, int frequency) {
+    cout << Color::BLUE << "→ " << Color::RESET;
+    cout << Color::GREEN << prefix << Color::YELLOW << suggestion.substr(prefix.length()) 
+         << Color::CYAN << " (frequency: " << frequency << ")" << Color::RESET << endl;
+}
+
+TrieNode::~TrieNode() {
+    for (auto& pair : child) {
+        delete pair.second;
+    }
+}
+
 int main() {
     TrieNode *root = new TrieNode();
-    cout << "1 Already Searched Word \n2 Word completion \n3 End" << endl << flush;
+    
+    // Load existing history
+    vector<string> history = FileHandler::loadHistory(FileHandler::DEFAULT_HISTORY_FILE);
+    for (const auto& word : history) {
+        root->insertHistory(word);
+    }
+
+    cout << Color::CYAN << "=== Smart Auto-Completion System ===" << Color::RESET << endl;
+    cout << Color::GREEN << "1" << Color::RESET << " Add word to history" << endl;
+    cout << Color::GREEN << "2" << Color::RESET << " Get word suggestions" << endl;
+    cout << Color::GREEN << "3" << Color::RESET << " Exit" << endl;
+    
     int choice;
     string word;
+    vector<string> newWords;
+
     while (true) {
+        cout << "\n" << Color::YELLOW << "Enter your choice (1-3): " << Color::RESET;
         cin >> choice;
-        if (choice == 3)
+
+        if (choice == 3) {
+            // Save all words before exiting
+            vector<string> allWords;
+            root->getAllWords(allWords, "");
+            FileHandler::saveHistory(FileHandler::DEFAULT_HISTORY_FILE, allWords);
             break;
+        }
+
         if (choice == 1) {
+            cout << Color::YELLOW << "Enter word to add: " << Color::RESET;
             cin >> word;
-            root -> insertHistory(word);
-        }else if (choice == 2) {
+            root->insertHistory(word);
+            cout << Color::GREEN << "Word added successfully!" << Color::RESET << endl;
+        }
+        else if (choice == 2) {
+            cout << Color::YELLOW << "Enter partial word: " << Color::RESET;
             cin >> word;
-            vector<string> ans = root -> bfsSearch(word);
-            for(auto suggestedWord : ans) {
-                cout << suggestedWord << endl << flush;
+            vector<string> suggestions = root->bfsSearch(word);
+            
+            if (suggestions.empty()) {
+                cout << Color::RED << "No suggestions found." << Color::RESET << endl;
+            } else {
+                cout << Color::CYAN << "\nSuggestions for '" << word << "':" << Color::RESET << endl;
+                for (const auto& suggestion : suggestions) {
+                    TrieNode* node = root;
+                    for(char c: suggestion){
+                        if(node->child.find(c) != node->child.end()){
+                            node = node->child[c];
+                        }else{
+                            break;
+                        }
+                    }
+                    root->displayColoredSuggestion(word, suggestion, node->search_frequency);
+                }
             }
-        }else {
-            cout << "Wrong Choice!!!" << endl << flush;
+        }
+        else {
+            cout << Color::RED << "Wrong Choice!!!" << Color::RESET << endl;
         }
     }
+
     delete root;
     return 0;
 }

@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autocomplete with Trie</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #55b1e3;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background-color: rgb(250, 152, 152);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 600px;
+            margin: 20px auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Arial', sans-serif;
+            font-weight: normal;
+            font-style: normal;
+            text-align: center;
+            color: #2cb82c;
+            box-sizing: border-box;
+            border: 2px solid #00071b;
+            min-height: 400px;
+        }
+        h1 {
+            color: #242121;
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+        }
+        .search-container {
+            position: relative;
+            width: 100%;
+            margin-bottom: 20px;
+            max-width: 500px;
+        }
+        .search-input {
+            width: 100%;
+            padding: 12px;
+            font-size: 1.1rem;
+            border: 2px solid #00071b;
+            border-radius: 8px;
+            outline: none;
+            transition: border-color 0.3s ease;
+            box-sizing: border-box;
+        }
+        .search-input:focus {
+            border-color: #007bff;
+        }
+        .suggestions {
+            position: absolute;
+            width: 100%;
+            max-height: 200px;
+            overflow-y: auto;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 0 0 8px 8px;
+            display: none;
+            z-index: 1000;
+        }
+        .suggestion-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            font-size: 1rem;
+        }
+        .suggestion-item:hover {
+            background-color: #eebd77;
+            font-size: 1.1rem;
+        }
+        .word-list {
+            margin-top: 10px;
+            width: 100%;
+            max-width: 500px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .word-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            width: 100%;
+            font-size: 1rem;
+            background-color: #fef9f9;
+            border: 1px solid #5d5f65;
+            margin-bottom: 4px;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+        .word-item span {
+            flex: 1;
+            text-align: left;
+            margin-right: 10px;
+        }
+        .delete-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: background-color 0.2s ease;
+            min-width: 50px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        .delete-btn:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Autocomplete with Trie</h1>
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="Type to search..." id="searchInput">
+            <div class="suggestions" id="suggestions"></div>
+        </div>
+        <div class="word-list" id="wordList"></div>
+    </div>
+
+    <script>
+        // Trie Node class
+        class TrieNode {
+            constructor() {
+                this.children = {};
+                this.isEndOfWord = false;
+                this.frequency = 0;  // Add frequency tracking
+            }
+        }
+
+        // Trie class
+        class Trie {
+            constructor() {
+                this.root = new TrieNode();
+            }
+
+            insert(word) {
+                let node = this.root;
+                for (let char of word.toLowerCase()) {
+                    if (!node.children[char]) {
+                        node.children[char] = new TrieNode();
+                    }
+                    node = node.children[char];
+                }
+                node.isEndOfWord = true;
+                node.frequency++;  // Increment frequency on insert
+            }
+
+            delete(word) {
+                return this._delete(this.root, word.toLowerCase(), 0);
+            }
+
+            _delete(node, word, depth) {
+                if (!node) return false;
+
+                if (depth === word.length) {
+                    if (!node.isEndOfWord) return false;
+                    
+                    node.isEndOfWord = false;
+                    node.frequency = 0;
+                    
+                    // Return true if node has no children
+                    return Object.keys(node.children).length === 0;
+                }
+
+                const char = word[depth];
+                if (!node.children[char]) return false;
+
+                const shouldDeleteChild = this._delete(node.children[char], word, depth + 1);
+
+                if (shouldDeleteChild) {
+                    delete node.children[char];
+                    return Object.keys(node.children).length === 0;
+                }
+
+                return false;
+            }
+
+            search(word) {
+                let node = this.root;
+                for (let char of word.toLowerCase()) {
+                    if (!node.children[char]) {
+                        return false;
+                    }
+                    node = node.children[char];
+                }
+                return node.isEndOfWord;
+            }
+
+            startsWith(prefix) {
+                let node = this.root;
+                for (let char of prefix.toLowerCase()) {
+                    if (!node.children[char]) {
+                        return false;
+                    }
+                    node = node.children[char];
+                }
+                return true;
+            }
+
+            getSuggestions(prefix) {
+                let suggestions = [];
+                let node = this.root;
+
+                // Find the node for the prefix
+                for (let char of prefix.toLowerCase()) {
+                    if (!node.children[char]) {
+                        return suggestions;
+                    }
+                    node = node.children[char];
+                }
+
+                // Helper function to collect words with frequency
+                const collectWords = (node, word) => {
+                    if (node.isEndOfWord) {
+                        suggestions.push({
+                            word: word,
+                            frequency: node.frequency
+                        });
+                    }
+                    for (let char in node.children) {
+                        collectWords(node.children[char], word + char);
+                    }
+                };
+
+                collectWords(node, prefix.toLowerCase());
+                
+                // Sort suggestions by frequency (descending)
+                return suggestions
+                    .sort((a, b) => b.frequency - a.frequency)
+                    .map(item => item.word);
+            }
+        }
+
+        // Initialize Trie and UI elements
+        const trie = new Trie();
+        const searchInput = document.getElementById('searchInput');
+        const suggestionsDiv = document.getElementById('suggestions');
+        const wordList = document.getElementById('wordList');
+
+        // Add more sample words with categories
+        const sampleWords = [
+            // Programming terms
+            'algorithm', 'binary', 'compiler', 'database', 'encryption', 'function',
+            'graphics', 'hash', 'interface', 'javascript', 'kernel', 'library',
+            'memory', 'network', 'object', 'program', 'query', 'recursion',
+            'server', 'thread', 'variable', 'web', 'xml', 'yaml', 'zip',
+            
+            // Common words
+            'apple', 'application', 'banana', 'ball', 'cat', 'car', 'dog', 'door',
+            'elephant', 'flower', 'garden', 'house', 'internet', 'jacket',
+            'keyboard', 'laptop', 'monitor', 'notebook', 'orange', 'pencil',
+            'question', 'rainbow', 'sunshine', 'tree', 'umbrella', 'violin',
+            'water', 'xylophone', 'yellow', 'zebra',
+            
+            // Technical terms
+            'api', 'backend', 'cache', 'debug', 'encrypt', 'firewall',
+            'gateway', 'host', 'index', 'json', 'key', 'load',
+            'microservice', 'node', 'optimize', 'protocol', 'queue',
+            'rest', 'security', 'token', 'url', 'version', 'webhook'
+        ];
+
+        // Insert sample words multiple times to simulate different frequencies
+        sampleWords.forEach(word => {
+            const frequency = Math.floor(Math.random() * 5) + 1; // Random frequency between 1-5
+            for (let i = 0; i < frequency; i++) {
+                trie.insert(word);
+            }
+        });
+
+        // Update suggestions as user types
+        searchInput.addEventListener('input', (e) => {
+            const prefix = e.target.value;
+            if (prefix.length > 0) {
+                const suggestions = trie.getSuggestions(prefix);
+                displaySuggestions(suggestions);
+            } else {
+                suggestionsDiv.style.display = 'none';
+            }
+        });
+
+        // Display suggestions
+        function displaySuggestions(suggestions) {
+            suggestionsDiv.innerHTML = '';
+            if (suggestions.length > 0) {
+                suggestions.forEach(suggestion => {
+                    const div = document.createElement('div');
+                    div.className = 'suggestion-item';
+                    div.textContent = suggestion;
+                    div.addEventListener('click', () => {
+                        searchInput.value = suggestion;
+                        suggestionsDiv.style.display = 'none';
+                        addWordToList(suggestion);
+                    });
+                    suggestionsDiv.appendChild(div);
+                });
+                suggestionsDiv.style.display = 'block';
+            } else {
+                suggestionsDiv.style.display = 'none';
+            }
+        }
+
+        // Add word to the list
+        function addWordToList(word) {
+            trie.insert(word); // Increment frequency when word is selected
+            const wordItem = document.createElement('div');
+            wordItem.className = 'word-item';
+            wordItem.innerHTML = `
+                <span>${word}</span>
+                <button class="delete-btn" onclick="removeWord('${word}', this)">Delete</button>
+            `;
+            wordList.appendChild(wordItem);
+        }
+
+        // Remove word from the list and Trie
+        function removeWord(word, button) {
+            trie.delete(word);
+            button.parentElement.remove();
+            // Clear search input if it matches the deleted word
+            if (searchInput.value.toLowerCase() === word.toLowerCase()) {
+                searchInput.value = '';
+                suggestionsDiv.style.display = 'none';
+            }
+        }
+
+        // Hide suggestions when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!searchInput.contains(e.target) && !suggestionsDiv.contains(e.target)) {
+                suggestionsDiv.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html> 
