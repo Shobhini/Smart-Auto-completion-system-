@@ -1,2 +1,23 @@
-node_modules
-node_modules
+# Compiled files
+*.exe
+*.o
+*.out
+output/
+
+# Node.js
+node_modules/
+package-lock.json
+package.json
+.npmrc
+
+# IDE
+.vscode/
+*.swp
+*.swo
+
+# Runtime data
+search_history.txt
+
+# Build directories
+build/
+dist/
