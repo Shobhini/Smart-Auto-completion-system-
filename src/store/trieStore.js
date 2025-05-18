@@ -217,6 +217,11 @@ const useTrieStore = create((set, get) => ({
             const searchHistory = localStorage.getItem('searchHistory');
             if (searchHistory) {
                 const historyWords = searchHistory.split('\n').filter(word => word.trim());
+                // Insert history words into Trie
+                historyWords.forEach(word => {
+                    trie.insert(word);
+                });
+                // Load into embedding model
                 trie.embeddingModel.loadFromTextFile(historyWords.join(' '));
             }
         } catch (error) {
