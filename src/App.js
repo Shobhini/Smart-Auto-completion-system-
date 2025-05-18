@@ -33,28 +33,53 @@ function App() {
     }, [initializeWords]);
 
     return (
-        <Container maxWidth="sm">
-            <Box sx={{ 
-                my: 4, 
-                p: 3, 
-                bgcolor: 'background.paper',
-                borderRadius: 2,
-                boxShadow: 3
-            }}>
-                <Typography variant="h4" component="h1" gutterBottom align="center">
-                    Autocomplete with Trie
-                </Typography>
-                
-                {error && (
-                    <Alert severity="error" sx={{ mb: 2 }}>
-                        {error}
-                    </Alert>
-                )}
+        <Box
+            sx={{
+                minHeight: '100vh',
+                backgroundImage: 'url("https://images.unsplash.com/photo-1451187580459-43490279c0fa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2072&q=80")',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                py: 4
+            }}
+        >
+            <Container maxWidth="sm">
+                <Box sx={{ 
+                    my: 4, 
+                    p: 4, 
+                    bgcolor: 'rgba(255, 255, 255, 0.9)',
+                    borderRadius: 4,
+                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+                    backdropFilter: 'blur(8px)'
+                }}>
+                    <Typography 
+                        variant="h4" 
+                        component="h1" 
+                        gutterBottom 
+                        align="center"
+                        sx={{
+                            color: '#1a237e',
+                            fontWeight: 'bold',
+                            mb: 4
+                        }}
+                    >
+                        Autocomplete with Trie
+                    </Typography>
+                    
+                    {error && (
+                        <Alert severity="error" sx={{ mb: 2 }}>
+                            {error}
+                        </Alert>
+                    )}
 
-                <SearchBar />
-                <WordList />
-            </Box>
-        </Container>
+                    <SearchBar />
+                    <WordList />
+                </Box>
+            </Container>
+        </Box>
     );
 }
 

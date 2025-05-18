@@ -1,5 +1,6 @@
 import React from 'react';
-import { Box, TextField, Paper, List, ListItem, ListItemText } from '@mui/material';
+import { Box, TextField, Paper, List, ListItem, ListItemText, IconButton } from '@mui/material';
+import ClearIcon from '@mui/icons-material/Clear';
 import useTrieStore from '../store/trieStore';
 
 function SearchBar() {
@@ -14,16 +15,36 @@ function SearchBar() {
         addWord(suggestion);
     };
 
+    const handleClear = () => {
+        setSearchValue('');
+    };
+
     return (
         <Box sx={{ position: 'relative', mb: 2 }}>
-            <TextField
-                fullWidth
-                variant="outlined"
-                placeholder="Type to search..."
-                value={searchValue}
-                onChange={handleInputChange}
-                sx={{ mb: 1 }}
-            />
+            <Box sx={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                <TextField
+                    fullWidth
+                    variant="outlined"
+                    placeholder="Type to search..."
+                    value={searchValue}
+                    onChange={handleInputChange}
+                    sx={{ mb: 1 }}
+                />
+                {searchValue && (
+                    <IconButton
+                        onClick={handleClear}
+                        sx={{
+                            position: 'absolute',
+                            right: 8,
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            color: 'text.secondary'
+                        }}
+                    >
+                        <ClearIcon />
+                    </IconButton>
+                )}
+            </Box>
             
             {suggestions.length > 0 && (
                 <Paper 
@@ -33,7 +54,8 @@ function SearchBar() {
                         width: '100%',
                         maxHeight: 200,
                         overflow: 'auto',
-                        zIndex: 1000
+                        zIndex: 1000,
+                        mt: -1
                     }}
                 >
                     <List>
