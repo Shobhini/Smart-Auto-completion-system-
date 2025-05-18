@@ -46,7 +46,7 @@ function SearchBar() {
                 )}
             </Box>
             
-            {suggestions.length > 0 && (
+            {suggestions.length > 0 && searchValue && (
                 <Paper 
                     elevation={3}
                     sx={{
@@ -55,7 +55,22 @@ function SearchBar() {
                         maxHeight: 200,
                         overflow: 'auto',
                         zIndex: 1000,
-                        mt: -1
+                        mt: -1,
+                        bgcolor: 'background.paper',
+                        '&::-webkit-scrollbar': {
+                            width: '8px',
+                        },
+                        '&::-webkit-scrollbar-track': {
+                            background: '#f1f1f1',
+                            borderRadius: '4px',
+                        },
+                        '&::-webkit-scrollbar-thumb': {
+                            background: '#888',
+                            borderRadius: '4px',
+                            '&:hover': {
+                                background: '#555',
+                            },
+                        },
                     }}
                 >
                     <List>
@@ -65,12 +80,33 @@ function SearchBar() {
                                 button
                                 onClick={() => handleSuggestionClick(suggestion)}
                                 sx={{
+                                    transition: 'all 0.2s ease-in-out',
                                     '&:hover': {
-                                        backgroundColor: 'action.hover'
-                                    }
+                                        backgroundColor: 'rgba(25, 118, 210, 0.08)',
+                                        transform: 'translateX(8px)',
+                                        '& .MuiListItemText-primary': {
+                                            color: '#1976d2',
+                                            fontWeight: 500,
+                                        },
+                                    },
+                                    '&:active': {
+                                        backgroundColor: 'rgba(25, 118, 210, 0.12)',
+                                    },
+                                    borderBottom: '1px solid',
+                                    borderColor: 'divider',
+                                    '&:last-child': {
+                                        borderBottom: 'none',
+                                    },
                                 }}
                             >
-                                <ListItemText primary={suggestion} />
+                                <ListItemText 
+                                    primary={suggestion}
+                                    sx={{
+                                        '& .MuiListItemText-primary': {
+                                            transition: 'all 0.2s ease-in-out',
+                                        },
+                                    }}
+                                />
                             </ListItem>
                         ))}
                     </List>

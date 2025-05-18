@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Container, Typography, Box, Alert } from '@mui/material';
 import SearchBar from './components/SearchBar';
 import WordList from './components/WordList';
@@ -27,23 +27,32 @@ const sampleWords = [
 
 function App() {
     const { initializeWords, error } = useTrieStore();
+    const [imageLoaded, setImageLoaded] = useState(false);
 
     useEffect(() => {
         initializeWords(sampleWords);
+        
+        // Preload the background image
+        const img = new Image();
+        img.src = "https://images.unsplash.com/photo-1451187580459-43490279c0fa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2072&q=80";
+        img.onload = () => setImageLoaded(true);
     }, [initializeWords]);
 
     return (
         <Box
             sx={{
                 minHeight: '100vh',
-                backgroundImage: 'url("https://images.unsplash.com/photo-1451187580459-43490279c0fa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2072&q=80")',
+                backgroundImage: imageLoaded 
+                    ? 'url("https://images.unsplash.com/photo-1451187580459-43490279c0fa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2072&q=80")'
+                    : 'linear-gradient(135deg, #1a237e 0%, #0d47a1 100%)',
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 backgroundRepeat: 'no-repeat',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                py: 4
+                py: 4,
+                transition: 'background-image 0.3s ease-in-out'
             }}
         >
             <Container maxWidth="sm">
@@ -53,7 +62,8 @@ function App() {
                     bgcolor: 'rgba(255, 255, 255, 0.9)',
                     borderRadius: 4,
                     boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-                    backdropFilter: 'blur(8px)'
+                    backdropFilter: 'blur(8px)',
+                    transition: 'all 0.3s ease-in-out'
                 }}>
                     <Typography 
                         variant="h4" 

@@ -119,6 +119,7 @@ const useTrieStore = create((set, get) => ({
             trie.insert(word);
             set(state => ({ 
                 words: [...state.words, word],
+                suggestions: [],
                 error: null
             }));
         } catch (error) {
